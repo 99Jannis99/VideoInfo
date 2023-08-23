@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* width: 100vw; */
+            height: 100vh;
+            display: flex;
+            /* justify-content: center; */
+            align-items: center;
+            flex-direction: column;
+        }
+
+        video {
+            max-height: 90vh;
+            background-color: black;
+        }
+
+        #controls {
+            margin-top: 10px;
+        }
+
+        #notes {
+            margin-top: 10px;
+        }
+
+        li {
+            list-style-type: none;
+            margin-bottom: 5px;
+        }
+
+        .note {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .note-marker {
+            height: 5px;
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="video" controls>
+        <source src="./video/Datev V3.mp4" type="video/mp4">
+    </video>
+    <div id="controls">
+        <button id="addNoteBtn">+</button>
+    </div>
+    <div id="notes">
+        <ul id="notesList"></ul>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const video = document.getElementById('video');
+            const addNoteBtn = document.getElementById('addNoteBtn');
+            const notesList = document.getElementById('notesList');
+
+            function saveNote(time, text) {
+                fetch('/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        time: time,
+                        text: text
+                    })
+                }).then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            console.log('Note saved successfully!');
+                        } else {
+                            console.error('Failed to save note.');
+                        }
+                    });
+            }
+
+            addNoteBtn.addEventListener('click', function () {
+                if (!video.paused) return;
+                const time = video.currentTime;
+                const li = document.createElement('li');
+                const note = document.createElement('div');
+                note.className = 'note';
+                note.textContent = `Note at ${time.toFixed(2)} seconds: `;
+                const input = document.createElement('input');
+                input.type = 'text';
+                note.appendChild(input);
+                li.appendChild(note);
+                notesList.appendChild(li);
+                const marker = document.createElement('div');
+                marker.className = 'note-marker';
+                marker.style.left = `${(time / video.duration) * 100}%`;
+                video.parentElement.appendChild(marker);
+                input.addEventListener('blur', function () {
+                    saveNote(time, input.value);
+                });
+            });
+        });
+
+    </script>
+</body>
+
+</html>

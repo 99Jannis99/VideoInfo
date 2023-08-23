@@ -62,7 +62,7 @@
             const notesList = document.getElementById('notesList');
 
             function saveNote(time, text) {
-                fetch('/notes', {
+                fetch('http://87.140.59.221:3000/notes', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
